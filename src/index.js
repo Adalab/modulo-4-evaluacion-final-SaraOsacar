@@ -86,7 +86,6 @@ server.get('/recetas/:id', async (req, res) => {
 
 // POST ---- Añadir nueva receta  
 server.post('/recetas', async (req, res) => {
-  /*const user = req.params.user;*/
   const newRecipe = req.body;
 
   try {
@@ -102,11 +101,40 @@ server.post('/recetas', async (req, res) => {
     conn.end();
     res.json({
       success: true, //Puede ser true o false
+      
+      
     });
   } catch (error) {
     console.log(error);
     res.json({
       success: false, //Puede ser true o false
+      message: error,
+    });
+  }
+});
+
+//PUT ---- actualizar una receta
+server.put('/recetas/:id', async (req, res) => {
+  const recipeId = req.params.id;
+  const { nombre, ingredientes, instrucciones } = req.body;
+  try {
+    const update =
+      'UPDATE recetas SET nombre= ?, ingredientes= ? , instrucciones= ? WHERE id = ?';
+    const conn = await getConnection();
+    const [result] = await conn.query(update, [
+      nombre,
+      ingredientes,
+      instrucciones,
+      recipeId,  
+      ]);
+    console.log(nombre);
+    conn.end();
+    res.json({
+      success: true,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
       message: error,
     });
   }
