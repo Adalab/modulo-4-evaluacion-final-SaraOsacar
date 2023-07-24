@@ -5,12 +5,10 @@
 
 // Imports
 
-const express = require("express");
-const cors = require("cors");
-const mysql = require("mysql2/promise");
-require('dotenv').config()
-
-
+const express = require('express');
+const cors = require('cors');
+const mysql = require('mysql2/promise');
+require('dotenv').config();
 
 // Arrancar el servidor
 
@@ -19,29 +17,23 @@ const server = express();
 // Configuración del servidor
 
 server.use(cors());
-server.use(express.json({limit: "25mb"}));
+server.use(express.json({ limit: '25mb' }));
 server.set('view engine', 'ejs');
-
-
 
 // Conexion a la base de datos
 
 async function getConnection() {
-  const connection = await mysql.createConnection(
-    {
-      host: process.env.DB_HOST || "localhost",
-      user: process.env.DB_USER || "root",
-      password: process.env.DB_PASS,  // <-- Pon aquí tu contraseña o en el fichero /.env en la carpeta raíz
-      database: process.env.DB_NAME || "Clase",
-    }
-  );
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASS, // <-- Pon aquí tu contraseña o en el fichero /.env en la carpeta raíz
+    database: process.env.DB_NAME || 'Clase',
+  });
 
   connection.connect();
 
   return connection;
 }
-
-
 
 // Poner a escuchar el servidor
 
@@ -50,11 +42,9 @@ server.listen(port, () => {
   console.log(`Ya se ha arrancado nuestro servidor: http://localhost:${port}/`);
 });
 
+// ENDPOINTS
 
-
-// Endpoints
-
-// GET---- para obtener el listado de recetas
+// GET----> para obtener el listado de recetas
 
 server.get('/recetas', async (req, res) => {
   const selectRecipes = 'SELECT * FROM recetas';
@@ -62,29 +52,29 @@ server.get('/recetas', async (req, res) => {
   const [result] = await conn.query(selectRecipes);
   const numOfElements = result.length;
   console.log(result);
-  conn.end(); 
+  conn.end();
   res.json({
     info: {
       info: { count: numOfElements },
-    results: result,}
+      results: result,
+    },
   });
 });
 
-// Obtener recetas por id
+// GET ----> Obtener recetas por id
 server.get('/recetas/:id', async (req, res) => {
   const recetaId = req.params.id;
   const select = 'SELECT * from recetas WHERE id = ?';
   const conn = await getConnection();
-  const [result] = await conn.query(select,[recetaId]);
+  const [result] = await conn.query(select, [recetaId]);
   console.log(result);
   conn.end();
   res.json({
-   
-    results: result, //listado 
-  }); 
+    results: result, //listado
+  });
 });
 
-// POST ---- Añadir nueva receta  
+// POST ----> Añadir nueva receta
 server.post('/recetas', async (req, res) => {
   const newRecipe = req.body;
 
@@ -93,7 +83,6 @@ server.post('/recetas', async (req, res) => {
       'INSERT INTO recetas (nombre, ingredientes, instrucciones) VALUES (?,?,?)';
     const conn = await getConnection();
     const [result] = await conn.query(insert, [
-     
       newRecipe.nombre,
       newRecipe.ingredientes,
       newRecipe.instrucciones,
@@ -101,8 +90,7 @@ server.post('/recetas', async (req, res) => {
     conn.end();
     res.json({
       success: true, //Puede ser true o false
-      
-      
+      id: result.insertId,
     });
   } catch (error) {
     console.log(error);
@@ -113,7 +101,7 @@ server.post('/recetas', async (req, res) => {
   }
 });
 
-//PUT ---- actualizar una receta
+//PUT ----> actualizar una receta
 server.put('/recetas/:id', async (req, res) => {
   const recipeId = req.params.id;
   const { nombre, ingredientes, instrucciones } = req.body;
@@ -125,9 +113,29 @@ server.put('/recetas/:id', async (req, res) => {
       nombre,
       ingredientes,
       instrucciones,
-      recipeId,  
-      ]);
+      recipeId,
+    ]);
     console.log(nombre);
+    conn.end();
+    res.json({
+      success: true,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error,
+    });
+  }
+});
+
+// DELETE ----> eliminar receta
+server.delete('/recetas/:id', async (req, res) => {
+  const recipeId = req.params.id;
+
+  try {
+    const deleteSql = 'DELETE from recetas WHERE id = ?';
+    const conn = await getConnection();
+    const [result] = await conn.query(deleteSql, recipeId);
     conn.end();
     res.json({
       success: true,
