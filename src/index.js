@@ -54,5 +54,33 @@ server.listen(port, () => {
 
 // Endpoints
 
-// GET /api/items
+// GET para obtener el listado de recetas
+
+server.get('/api/recetas', async (req, res) => {
+  const selectRecipes = 'SELECT * FROM recetas';
+  const conn = await getConnection();
+  const [result] = await conn.query(selectRecipes);
+  const numOfElements = result.length;
+  console.log(result);
+  conn.end(); 
+  res.json({
+    info: {
+      info: { count: numOfElements },
+    results: result,}
+  });
+});
+
+// Obtener recetas por id
+server.get('/api/recetas/:id', async (req, res) => {
+  const recetaId = req.params.id;
+  const select = 'SELECT * from recetas WHERE id = ?';
+  const conn = await getConnection();
+  const [result] = await conn.query(select,[recetaId]);
+  console.log(result);
+  conn.end();
+  res.json({
+   
+    results: result, //listado 
+  }); 
+});
 
