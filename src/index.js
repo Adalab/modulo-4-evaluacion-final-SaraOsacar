@@ -54,9 +54,9 @@ server.listen(port, () => {
 
 // Endpoints
 
-// GET para obtener el listado de recetas
+// GET---- para obtener el listado de recetas
 
-server.get('/api/recetas', async (req, res) => {
+server.get('/recetas', async (req, res) => {
   const selectRecipes = 'SELECT * FROM recetas';
   const conn = await getConnection();
   const [result] = await conn.query(selectRecipes);
@@ -71,7 +71,7 @@ server.get('/api/recetas', async (req, res) => {
 });
 
 // Obtener recetas por id
-server.get('/api/recetas/:id', async (req, res) => {
+server.get('/recetas/:id', async (req, res) => {
   const recetaId = req.params.id;
   const select = 'SELECT * from recetas WHERE id = ?';
   const conn = await getConnection();
@@ -84,3 +84,30 @@ server.get('/api/recetas/:id', async (req, res) => {
   }); 
 });
 
+// POST ---- Añadir nueva receta  
+server.post('/recetas', async (req, res) => {
+  /*const user = req.params.user;*/
+  const newRecipe = req.body;
+
+  try {
+    const insert =
+      'INSERT INTO recetas (nombre, ingredientes, instrucciones) VALUES (?,?,?)';
+    const conn = await getConnection();
+    const [result] = await conn.query(insert, [
+     
+      newRecipe.nombre,
+      newRecipe.ingredientes,
+      newRecipe.instrucciones,
+    ]);
+    conn.end();
+    res.json({
+      success: true, //Puede ser true o false
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      success: false, //Puede ser true o false
+      message: error,
+    });
+  }
+});
